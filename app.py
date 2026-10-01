@@ -20,7 +20,7 @@ model = joblib.load("model/random_forest_model.pkl")
 # =========================================================
 
 def get_db():
-    conn = sqlite3.connect("solarcast.db")
+    conn = sqlite3.connect("/tmp/solarcast.db")
     conn.row_factory = sqlite3.Row
     return conn
 
