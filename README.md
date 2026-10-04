@@ -1,5 +1,7 @@
 # SolarCast
+## 🌐 Demo Website
 
+👉 [Buka SolarCast](https://solarcast-five.vercel.app/)
 ## Sistem Peramalan Produksi Energi Panel Surya Berbasis Web
 
 SolarCast adalah aplikasi berbasis web yang digunakan untuk memperkirakan **daya AC yang dihasilkan panel surya** berdasarkan kondisi lingkungan. Sistem menggunakan model **Linear Regression** dan **Random Forest** yang dilatih menggunakan data pembangkitan panel surya dan data cuaca.
