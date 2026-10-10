@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect, url_for
 import joblib
 import pandas as pd
 import sqlite3
@@ -20,7 +20,7 @@ model = joblib.load("model/random_forest_model.pkl")
 # =========================================================
 
 def get_db():
-    conn = sqlite3.connect("/tmp/solarcast.db")
+    conn = sqlite3.connect("solarcast.db")
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -130,10 +130,26 @@ def get_history():
 @app.route("/")
 def home():
     history = get_history()
+    return render_template("index.html", history=history)
 
+
+@app.route("/prediksi")
+def prediction_page():
+    # Halaman prediksi tetap menggunakan index.html asli.
+    history = get_history()
+    return render_template("index.html", history=history)
+
+
+@app.route("/dashboard")
+def dashboard():
+    # Riwayat lengkap dipakai untuk total; tabel/grafik menampilkan 10 terbaru.
+    history = get_history()
+    latest = history[0] if history else None
     return render_template(
-        "index.html",
-        history=history
+        "dashboard.html",
+        history=history[:10],
+        latest=latest,
+        total_predictions=len(history)
     )
 
 
@@ -180,26 +196,47 @@ def predict():
 
 
         # -------------------------------------------------
-        # Validasi
-        # -------------------------------------------------
+        # Validasi input dan batas operasional
+        import math
 
-        if ambient_temperature < -50 or ambient_temperature > 70:
-            raise ValueError(
-                "Suhu lingkungan harus berada antara -50°C sampai 70°C."
+        values = [
+            ambient_temperature,
+            module_temperature,
+            irradiation
+        ]
+
+        if not all(math.isfinite(value) for value in values):
+            raise ValueError("Semua input harus berupa angka yang valid.")
+
+        if not 0 <= ambient_temperature <= 50:
+            raise ValueError("Suhu lingkungan harus antara 0 sampai 50 ?C.")
+
+        if not 0 <= module_temperature <= 85:
+            raise ValueError("Suhu modul panel harus antara 0 sampai 85 ?C.")
+
+        if not 0 <= irradiation <= 1.5:
+            raise ValueError("Iradiasi matahari harus antara 0 sampai 1.5 kW/m?.")
+
+        warning_messages = []
+
+        if not 20.3985 <= ambient_temperature <= 35.2525:
+            warning_messages.append("suhu lingkungan di luar rentang data pelatihan")
+
+        if not 18.1404 <= module_temperature <= 65.5457:
+            warning_messages.append("suhu modul panel di luar rentang data pelatihan")
+
+        if irradiation > 1.2217:
+            warning_messages.append("iradiasi di luar rentang data pelatihan")
+
+        warning = ""
+        if warning_messages:
+            warning = (
+                "Peringatan: "
+                + "; ".join(warning_messages)
+                + ". Hasil prediksi mungkin kurang akurat."
             )
 
-        if module_temperature < -50 or module_temperature > 100:
-            raise ValueError(
-                "Suhu modul harus berada antara -50°C sampai 100°C."
-            )
 
-        if irradiation < 0:
-            raise ValueError(
-                "Iradiasi tidak boleh bernilai negatif."
-            )
-
-
-        # -------------------------------------------------
         # Prediksi
         # -------------------------------------------------
 
@@ -278,7 +315,8 @@ def predict():
             "irradiation": irradiation,
             "prediction": prediction,
             "created_at": created_at,
-            "status": status
+            "status": status,
+            "warning": warning
         }
 
 

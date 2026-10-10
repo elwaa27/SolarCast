@@ -261,7 +261,9 @@
         color: #44576b;
 
         transition: 0.25s ease;
-    }
+    
+    font-weight: 700;
+}
 
 
     .nav-menu a::after {
@@ -283,13 +285,16 @@
     }
 
 
-    .nav-menu a:hover {
+    .nav-menu a:hover,
+    .nav-menu a.active {
         color: var(--blue);
     }
 
 
-    .nav-menu a:hover::after {
+    .nav-menu a:hover::after,
+    .nav-menu a.active::after {
         width: 100%;
+        background: var(--blue);
     }
 
 
@@ -2226,12 +2231,16 @@
             Model
         </a>
 
-        <a href="#prediksi">
+        <a href="#prediksi" class="active" aria-current="page">
             Prediksi
         </a>
 
         <a href="#tim">
             Tim
+        </a>
+
+        <a href="{{ url_for('dashboard') }}">
+            Dashboard
         </a>
 
         <a
@@ -3118,12 +3127,12 @@
 
                             <input
                                 type="number"
-                                step="0.01"
+                               
                                 id="ambient_temperature"
                                 name="ambient_temperature"
                                 placeholder="Contoh: 25.5"
                                 required
-                            >
+                             step="any" min="0" max="50">
 
                         </div>
 
@@ -3153,12 +3162,12 @@
 
                             <input
                                 type="number"
-                                step="0.01"
+                               
                                 id="module_temperature"
                                 name="module_temperature"
                                 placeholder="Contoh: 35.2"
                                 required
-                            >
+                             step="any" min="0" max="85">
 
                         </div>
 
@@ -3188,13 +3197,13 @@
 
                             <input
                                 type="number"
-                                step="0.01"
-                                min="0"
+                               
+                               
                                 id="irradiation"
                                 name="irradiation"
                                 placeholder="Masukkan nilai"
                                 required
-                            >
+                             step="any" min="0" max="1.5">
 
                         </div>
 
@@ -3910,9 +3919,13 @@ function showResult(data) {
             (status.class || "");
 
 
-        resultDescription.textContent =
+        const baseDescription =
             status.description ||
             "Prediksi berhasil diproses.";
+
+        resultDescription.textContent = data.warning
+            ? `${baseDescription} ${data.warning}`
+            : baseDescription;
 
     }
 
