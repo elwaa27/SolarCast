@@ -2141,6 +2141,51 @@
 
     }
 
+
+    /* ANALISIS DAN REKOMENDASI HASIL PREDIKSI */
+    .prediction-analysis {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 22px;
+    }
+
+    .prediction-analysis-card {
+        min-width: 0;
+        padding: 20px;
+        border: 1px solid #dfe8f0;
+        border-radius: 14px;
+        background: #f7faff;
+    }
+
+    .prediction-analysis-card h4 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0 0 12px;
+        color: #0b2f5b;
+        font-size: 15px;
+        font-weight: 700;
+    }
+
+    .prediction-analysis-card h4 i {
+        color: #2876c7;
+    }
+
+    .prediction-analysis-card p {
+        margin: 0;
+        color: #52657a;
+        font-size: 13px;
+        line-height: 1.8;
+        overflow-wrap: anywhere;
+    }
+
+    @media (max-width: 640px) {
+        .prediction-analysis {
+            grid-template-columns: 1fr;
+        }
+    }
+
 </style>
 
 </head>
@@ -3323,6 +3368,17 @@
                 </div>
 
 
+                <section class="prediction-analysis" id="predictionAnalysis" aria-live="polite">
+                    <article class="prediction-analysis-card">
+                        <h4><i class="fa-solid fa-magnifying-glass-chart"></i> Analisis Kondisi</h4>
+                        <p id="predictionAnalysisText">Analisis kondisi akan ditampilkan setelah prediksi berhasil.</p>
+                    </article>
+                    <article class="prediction-analysis-card">
+                        <h4><i class="fa-solid fa-list-check"></i> Rekomendasi</h4>
+                        <p id="predictionRecommendationText">Rekomendasi akan ditampilkan setelah prediksi berhasil.</p>
+                    </article>
+                </section>
+
                 <div class="result-inputs">
 
 
@@ -3950,6 +4006,40 @@ function showResult(data) {
             2
         );
 
+
+    // ANALISIS KONDISI DAN REKOMENDASI
+    const analysisText = document.getElementById("predictionAnalysisText");
+    const recommendationText = document.getElementById("predictionRecommendationText");
+    const irradiation = Number(data.irradiation);
+
+    if (analysisText && recommendationText) {
+        if (Number.isFinite(irradiation) && irradiation <= 0) {
+            analysisText.textContent =
+                "Iradiasi matahari bernilai 0. Berdasarkan aturan aplikasi, kondisi ini dikategorikan sebagai tidak ada pembangkitan daya.";
+            recommendationText.textContent =
+                "Lakukan prediksi kembali ketika iradiasi matahari tersedia. Periksa juga kondisi cuaca dan pastikan panel tidak tertutup bayangan.";
+        } else if (Number.isFinite(prediction) && prediction < 500) {
+            analysisText.textContent =
+                "Perkiraan daya berada pada tingkat rendah berdasarkan kategori aplikasi. Iradiasi, suhu, dan kondisi lingkungan dapat memengaruhi hasil.";
+            recommendationText.textContent =
+                "Periksa kemungkinan bayangan atau kotoran pada panel. Bandingkan hasil prediksi pada kondisi iradiasi yang berbeda.";
+        } else if (Number.isFinite(prediction) && prediction < 1000) {
+            analysisText.textContent =
+                "Perkiraan daya berada pada tingkat cukup berdasarkan kategori aplikasi. Perubahan kondisi lingkungan dapat memengaruhi keluaran panel.";
+            recommendationText.textContent =
+                "Pantau perubahan iradiasi dan suhu modul. Catat hasil prediksi pada waktu berbeda untuk membandingkan perkiraan daya.";
+        } else if (Number.isFinite(prediction)) {
+            analysisText.textContent =
+                "Perkiraan daya berada pada tingkat tinggi berdasarkan kategori aplikasi. Hasil ini merupakan estimasi model, bukan pengukuran langsung.";
+            recommendationText.textContent =
+                "Pertahankan pemantauan kondisi panel dan bandingkan estimasi dengan data pengukuran aktual jika tersedia.";
+        } else {
+            analysisText.textContent =
+                "Analisis belum dapat ditampilkan karena hasil prediksi tidak valid.";
+            recommendationText.textContent =
+                "Periksa kembali nilai input dan jalankan prediksi ulang.";
+        }
+    }
 
     resultBox.classList.add(
         "show"
